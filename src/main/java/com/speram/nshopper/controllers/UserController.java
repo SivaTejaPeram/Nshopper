@@ -1,31 +1,43 @@
 package com.speram.nshopper.controllers;
 
-import com.speram.nshopper.dao.UserRepository;
-import com.speram.nshopper.modal.User;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.speram.nshopper.modal.RoleUserForm;
+import com.speram.nshopper.modal.AppUser;
+import com.speram.nshopper.services.UserService;
+import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Optional;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
 
 @RestController
+@RequestMapping("/api")
+@AllArgsConstructor
 public class UserController {
 
-    @Autowired
-    UserRepository userRepo;
+    private UserService userService;
 
     @PostMapping("/user")
-    public User save(@RequestBody User user){
-        return userRepo.save(user);
+    public ResponseEntity save(@RequestBody AppUser appUser){
+        return ResponseEntity.created(null).body(userService.saveUser(appUser));
     }
 
     @GetMapping("/users")
-    public List<User> getAll(){
-        return userRepo.findAll();
+    public ResponseEntity getAll(){
+        return ResponseEntity.ok(userService.findAll());
     }
 
-    @GetMapping("/user/{id}")
-    public Optional<User> findUser(@PathVariable Long id){
-        return userRepo.findById(id);
+    @PostMapping
+    public ResponseEntity addRoleToUser(@RequestBody RoleUserForm form){
+        userService.addRoleToUser(form.getUsername(), form.getRoleName());
+        return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/token/refresh")
+    public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        userService.refreshToken(request,response);
+    }
+
 }
